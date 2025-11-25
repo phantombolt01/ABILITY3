@@ -37,7 +37,7 @@ public abstract class Ability {
             ));
             return;
         }
-        
+
         this.execute();
         this.setCooldown();
     }

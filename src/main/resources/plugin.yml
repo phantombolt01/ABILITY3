@@ -46,6 +46,9 @@ commands:
   ability2:
     description: Activate your mask's second ability
     usage: /ability2
+  ability3:
+    description: Activate your sin's ability
+    usage: /ability3
 
 permissions:
   oni.trust:

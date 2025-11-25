@@ -39,27 +39,84 @@ public class ActionBarManager {
         final Mask mask = playerData.getCurrentMask();
         final Sin sin = playerData.getCurrentSin();
 
-        if (mask == null && sin == null) {
+        if (mask == null) {
             return;
         }
 
-        // Prioritize sin display over mask display
-        if (sin != null) {
-            final Component sinActionBar = this.buildSinActionBarMessage(player, sin, playerData);
-            player.sendActionBar(sinActionBar);
-            return;
-        }
-
-        // Check if player has an event mask
         if (playerData.getMaskType().isEventMask()) {
             final Component eventActionBar = this.buildEventActionBarMessage(player, playerData);
             player.sendActionBar(eventActionBar);
             return;
         }
 
-        // Default mask visuals (classic version)
+        if (playerData.isHasSinItem() && sin != null) {
+            final Component maskWithSinActionBar = this.buildMaskWithSinActionBarMessage(player, mask, sin, playerData);
+            player.sendActionBar(maskWithSinActionBar);
+            return;
+        }
+
         final Component actionBarMessage = this.buildActionBarMessage(player, mask, playerData);
         player.sendActionBar(actionBarMessage);
+    }
+
+    private Component buildMaskWithSinActionBarMessage(final Player player, final Mask mask, final Sin sin, final PlayerData playerData) {
+        Component message = Component.empty();
+
+        final MaskType maskType = mask.getMaskType();
+        message = message.append(Component.text(maskType.getActionBarIcon() + " ", maskType.getColor()))
+                .append(Component.text(maskType.getDisplayName(), maskType.getColor()))
+                .append(Component.text(" │ ", NamedTextColor.DARK_GRAY));
+
+        final var maskAbilities = mask.getAbilities();
+        for (int i = 0; i < Math.min(2, maskAbilities.size()); i++) {
+            if (i > 0) {
+                message = message.append(Component.text(" || ", NamedTextColor.DARK_GRAY));
+            }
+
+            final var ability = maskAbilities.get(i);
+            final long remainingCooldown = playerData.getRemainingCooldown(ability.getName());
+
+            if (remainingCooldown > 0) {
+                final double remainingSeconds = remainingCooldown / 1000.0;
+                final String cooldownBar = this.createCooldownBar(remainingSeconds, ability.getDefaultCooldownSeconds());
+                message = message.append(Component.text("A" + (i + 1) + " ", NamedTextColor.GRAY))
+                        .append(Component.text(cooldownBar + " ", NamedTextColor.YELLOW))
+                        .append(Component.text(String.format("%.1fs", remainingSeconds), NamedTextColor.YELLOW));
+            } else {
+                message = message.append(Component.text("A" + (i + 1) + " ", NamedTextColor.GRAY))
+                        .append(Component.text("● ", NamedTextColor.GREEN))
+                        .append(Component.text("READY", NamedTextColor.GREEN));
+            }
+        }
+
+        final int tier = playerData.getTierLevel();
+        message = message.append(Component.text(" │ ", NamedTextColor.DARK_GRAY));
+
+        for (int i = 0; i < 2; i++) {
+            if (i < tier) {
+                message = message.append(Component.text("★", NamedTextColor.GOLD));
+            } else {
+                message = message.append(Component.text("☆", NamedTextColor.GRAY));
+            }
+        }
+
+        final SinType sinType = sin.getSinType();
+        final var sinAbilities = sin.getAbilities();
+        if (!sinAbilities.isEmpty()) {
+            final long ability3Cooldown = playerData.getRemainingCooldown(sinAbilities.get(0).getName());
+
+            message = message.append(Component.text(" │ ", NamedTextColor.DARK_GRAY))
+                    .append(Component.text(sinType.getDisplayName().split(" - ")[0] + " ", sinType.getColor()));
+
+            if (ability3Cooldown > 0) {
+                final double remainingSeconds = ability3Cooldown / 1000.0;
+                message = message.append(Component.text(String.format("%.1fs", remainingSeconds), NamedTextColor.YELLOW));
+            } else {
+                message = message.append(Component.text("● READY", NamedTextColor.GREEN));
+            }
+        }
+
+        return message;
     }
 
     private Component buildSinActionBarMessage(final Player player, final Sin sin, final PlayerData playerData) {

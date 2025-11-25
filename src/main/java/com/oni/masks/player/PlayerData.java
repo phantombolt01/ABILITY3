@@ -31,6 +31,7 @@ public class PlayerData {
     private long lastRerollTime; // Anti-spam for reroll items
     private Set<UUID> uniqueKills; // Track unique player kills for tier system
     private int tierLevel; // Current tier (0, 1, 2)
+    private boolean hasSinItem; // Season 2: Sin Item equipped (separate from mask)
     
     public PlayerData(final UUID playerId) {
         this.playerId = playerId;
@@ -45,6 +46,7 @@ public class PlayerData {
         this.lastRerollTime = 0;
         this.uniqueKills = new HashSet<>();
         this.tierLevel = 0;
+        this.hasSinItem = false;
     }
     
     public boolean isTrusted(final UUID otherPlayerId) {
@@ -111,5 +113,50 @@ public class PlayerData {
     
     public int getUniqueKillCount() {
         return this.uniqueKills.size();
+    }
+
+    public void applyTriangleCooldown(final String usedAbilityName) {
+        if (!this.hasSinItem || this.currentMask == null || this.currentSin == null) {
+            return;
+        }
+
+        final long triangleCooldownMs = 5000;
+        final long triangleEndTime = System.currentTimeMillis() + triangleCooldownMs;
+
+        final var maskAbilities = this.currentMask.getAbilities();
+        final var sinAbilities = this.currentSin.getAbilities();
+
+        if (maskAbilities.isEmpty() || sinAbilities.isEmpty()) {
+            return;
+        }
+
+        final String ability1Name = maskAbilities.size() > 0 ? maskAbilities.get(0).getName() : null;
+        final String ability2Name = maskAbilities.size() > 1 ? maskAbilities.get(1).getName() : null;
+        final String ability3Name = sinAbilities.get(0).getName();
+
+        if (usedAbilityName.equals(ability1Name)) {
+            if (ability2Name != null) {
+                final long ability2Current = this.abilityCooldowns.getOrDefault(ability2Name, 0L);
+                this.abilityCooldowns.put(ability2Name, Math.max(ability2Current, triangleEndTime));
+            }
+            final long ability3Current = this.abilityCooldowns.getOrDefault(ability3Name, 0L);
+            this.abilityCooldowns.put(ability3Name, Math.max(ability3Current, triangleEndTime));
+        } else if (usedAbilityName.equals(ability2Name)) {
+            if (ability1Name != null) {
+                final long ability1Current = this.abilityCooldowns.getOrDefault(ability1Name, 0L);
+                this.abilityCooldowns.put(ability1Name, Math.max(ability1Current, triangleEndTime));
+            }
+            final long ability3Current = this.abilityCooldowns.getOrDefault(ability3Name, 0L);
+            this.abilityCooldowns.put(ability3Name, Math.max(ability3Current, triangleEndTime));
+        } else if (usedAbilityName.equals(ability3Name)) {
+            if (ability1Name != null) {
+                final long ability1Current = this.abilityCooldowns.getOrDefault(ability1Name, 0L);
+                this.abilityCooldowns.put(ability1Name, Math.max(ability1Current, triangleEndTime));
+            }
+            if (ability2Name != null) {
+                final long ability2Current = this.abilityCooldowns.getOrDefault(ability2Name, 0L);
+                this.abilityCooldowns.put(ability2Name, Math.max(ability2Current, triangleEndTime));
+            }
+        }
     }
 }

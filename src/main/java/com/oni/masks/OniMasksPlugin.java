@@ -119,6 +119,7 @@ public final class OniMasksPlugin extends JavaPlugin {
         final AbilityCommand abilityCommand = new AbilityCommand();
         this.getCommand("ability1").setExecutor(abilityCommand);
         this.getCommand("ability2").setExecutor(abilityCommand);
+        this.getCommand("ability3").setExecutor(abilityCommand);
     }
     
     // Explicit getters (no Lombok dependency issues)
