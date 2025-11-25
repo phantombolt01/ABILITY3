@@ -1,0 +1,80 @@
+name: Oni-Masks
+version: '12.5.0'
+main: com.oni.masks.OniMasksPlugin
+api-version: '1.21'
+authors: [UTAIB, Phantomxdz]
+description: Oni SMP - Final Release
+
+commands:
+  trust:
+    description: Trust a player to share positive effects
+    usage: /trust <player>
+    permission: oni.trust
+  untrust:
+    description: Untrust a player
+    usage: /untrust <player>
+    permission: oni.trust
+  config:
+    description: Open configuration GUI
+    usage: /config
+    permission: oni.admin.config
+  event:
+    description: Toggle event mask mode
+    usage: /event <give|remove|transfer|delete> [args]
+    permission: oni.admin.event
+  reroll:
+    description: Give a player a reroll item
+    usage: /reroll [player]
+    permission: oni.admin.reroll
+  plugininfo:
+    description: Display plugin information and easter egg
+    usage: /plugininfo
+    permission: oni.plugininfo
+  developer:
+    description: Reduce Cooldowns
+    usage: /developer
+  withdraw:
+    description: Convert a tier into a tradeable item
+    usage: /withdraw
+  sos:
+    description: Season of Sins commands
+    usage: /sos <give|remove> [args]
+    permission: oni.admin.sos
+  ability1:
+    description: Activate your mask's first ability
+    usage: /ability1
+  ability2:
+    description: Activate your mask's second ability
+    usage: /ability2
+
+permissions:
+  oni.trust:
+    description: Allow players to trust/untrust others
+    default: true
+  oni.admin.config:
+    description: Access to configuration GUI
+    default: op
+  oni.admin.event:
+    description: Control event mask activation
+    default: op
+  oni.admin.reroll:
+    description: Give reroll items to players
+    default: op
+  oni.plugininfo:
+    description: Access to plugin info command
+    default: true
+  oni.admin.sos:
+    description: Control Season of Sins artifacts
+    default: op
+  oni.withdraw:
+    description: Allow players to withdraw tier fragments
+    default: true
+  oni.*:
+    description: All Oni permissions
+    default: op
+    children:
+      - oni.trust
+      - oni.admin.config
+      - oni.admin.event
+      - oni.admin.reroll
+      - oni.plugininfo
